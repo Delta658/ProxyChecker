@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"strings"
 
 	"github.com/valyala/fasthttp"
@@ -11,15 +10,15 @@ import (
 // 返回值1为HTTPS,2为Socks4,3为Socks5,0为不可用
 func CheckProxy(i int) int {
 	var proxy string = proxies[i]
-	var isProxy = strings.Contains(HttpsGet(proxy), "google")
+	var isProxy = strings.Contains(HttpsGet(proxy), "百度")
 	if isProxy {
 		return 1
 	}
-	isProxy = strings.Contains(Socks4Get(proxy), "google")
+	isProxy = strings.Contains(Socks4Get(proxy), "百度")
 	if isProxy {
 		return 2
 	}
-	isProxy = strings.Contains(Socks5Get(proxy), "google")
+	isProxy = strings.Contains(Socks5Get(proxy), "百度")
 	if isProxy {
 		return 3
 	} else {
@@ -29,17 +28,19 @@ func CheckProxy(i int) int {
 
 func Socks4Get(proxy string) string {
 	client := &fasthttp.Client{}
-	client.Dial = fasthttpproxy.FasthttpSocksDialer("socks4://" + proxy)
+	client.Dial = fasthttpproxy.FasthttpSocksDialer(proxy)
 	req := fasthttp.AcquireRequest()
-	req.SetRequestURI("https://www.google.com")
+	req.SetRequestURI("https://www.baidu.com")
 	req.Header.SetMethod("GET")
 
 	resp := fasthttp.AcquireResponse()
-	if err := client.Do(req, resp); err != nil {
-		log.Fatal(err)
-	}
+	err := client.Do(req, resp)
 	fasthttp.ReleaseRequest(req)
 	defer fasthttp.ReleaseResponse(resp)
+	if err != nil {
+		//fmt.Println(err)
+		return ""
+	}
 	return string(resp.Body())
 }
 
@@ -47,30 +48,34 @@ func Socks5Get(proxy string) string {
 	client := &fasthttp.Client{}
 	client.Dial = fasthttpproxy.FasthttpSocksDialer("socks5://" + proxy)
 	req := fasthttp.AcquireRequest()
-	req.SetRequestURI("https://www.google.com")
+	req.SetRequestURI("https://www.baidu.com")
 	req.Header.SetMethod("GET")
 
 	resp := fasthttp.AcquireResponse()
-	if err := client.Do(req, resp); err != nil {
-		log.Fatal(err)
-	}
+	err := client.Do(req, resp)
 	fasthttp.ReleaseRequest(req)
 	defer fasthttp.ReleaseResponse(resp)
+	if err != nil {
+		//fmt.Println(err)
+		return ""
+	}
 	return string(resp.Body())
 }
 
 func HttpsGet(proxy string) string {
 	client := &fasthttp.Client{}
-	client.Dial = fasthttpproxy.FasthttpSocksDialer("https://" + proxy)
+	client.Dial = fasthttpproxy.FasthttpHTTPDialer(proxy)
 	req := fasthttp.AcquireRequest()
-	req.SetRequestURI("https://www.google.com")
+	req.SetRequestURI("https://www.baidu.com")
 	req.Header.SetMethod("GET")
 
 	resp := fasthttp.AcquireResponse()
-	if err := client.Do(req, resp); err != nil {
-		log.Fatal(err)
-	}
+	err := client.Do(req, resp)
 	fasthttp.ReleaseRequest(req)
 	defer fasthttp.ReleaseResponse(resp)
+	if err != nil {
+		//fmt.Println(err)
+		return ""
+	}
 	return string(resp.Body())
 }
